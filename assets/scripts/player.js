@@ -18,7 +18,10 @@ class Player {
         )
      }
      update() {
-        this.x += 5
+
+         // if (this.x >= this.game.width - this.width) {
+         //    this.x += 5
+         // }
          this.y += this.speedY
          if (!this.isTouchingBottom()) {
             this.speedY += this.game.gravity;
