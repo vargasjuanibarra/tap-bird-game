@@ -31,12 +31,10 @@ class Player {
 
          if (this.isTouchingBottom()) {
             this.y = this.game.height - this.height;
-            console.log(this.height)
          }
          // top boundary
          if (this.isTouchingTop()) {
             // this.y = 0;
-            console.log(this.height)
          }
 
      }

@@ -6,10 +6,14 @@ class Game {
         this.height = this.canvas.height;
         this.baseHeight = 720;
         this.ratio = this.height / this.baseHeight;
-        this.background = new Background(this)
-        this.player = new Player(this)
+        this.background = new Background(this);
+        this.player = new Player(this);
+        this.obstacles = [];
+        this.numberOfObstacles = 1;
         this.gravity;
         this.speed;
+        this.score;
+        this.gameOver;
 
         this.resize(window.innerWidth, window.innerHeight)
 
@@ -19,25 +23,23 @@ class Game {
         })
         // mouse controls
         this.canvas.addEventListener('mousedown', (e) => {
-            console.log(e)
             this.player.flap()
         })
         // keyboard control
         window.addEventListener('keydown', (e) => {
-            console.log(e)
             if(e.code === 'Space') {
-                 this.player.flap() 
+                this.player.flap() 
             }
         })
         // touch control
         this.canvas.addEventListener('touchstart', (e) => {
-            console.log(e)
+            this.player.flap() 
         })
     }
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
-        this.ctx.fillStyle = 'pink'
+        this.ctx.fillStyle = 'yellow'
         this.width = this.canvas.width
         this.height = this.canvas.height
         this.ratio = this.height / this.baseHeight;
@@ -46,13 +48,31 @@ class Game {
         this.speed = 2 * this.ratio;
         this.background.resize();
         this.player.resize();
-        console.log(this.height, this.baseHeight, this.ratio)
+        this.createObstacles();
+        this.obstacles.forEach(obstacle => {
+            obstacle.resize();
+        })
+        this.score = 0;
+        this.gameOver = false;
     }
     render() {
         this.background.update()
         this.background.draw()
         this.player.update()
         this.player.draw()
+        this.obstacles.forEach(obstacle => {
+            obstacle.update();
+            obstacle.draw();
+        })
+    }
+
+    createObstacles() {
+        this.obstacles = [];
+        const firstX = this.baseHeight * this.ratio;
+        const obstacleSpacing = 600 * this.ratio;
+        for (let i = 0; i < this.numberOfObstacles; i++) {
+            this.obstacles.push(new Obstacle(this, firstX + i * obstacleSpacing))
+        }
     }
 
 }
@@ -68,7 +88,10 @@ window.addEventListener('load', function() {
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
         game.render();
-        requestAnimationFrame(animate)
+        if(!game.gameOver) {
+            console.log(game.gameOver)
+            requestAnimationFrame(animate)
+        }
     }
 
     requestAnimationFrame(animate)
