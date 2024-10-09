@@ -14,6 +14,9 @@ class Game {
         this.speed;
         this.score;
         this.gameOver;
+        this.timer;
+        this.message1;
+        this.message2;
 
         this.resize(window.innerWidth, window.innerHeight)
 
@@ -39,7 +42,11 @@ class Game {
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
-        this.ctx.fillStyle = 'yellow'
+        this.ctx.fillStyle = 'red'
+        this.ctx.font = '15px Bungee'
+        this.ctx.textAlign =  'end'
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeStyle = 'white';
         this.width = this.canvas.width
         this.height = this.canvas.height
         this.ratio = this.height / this.baseHeight;
@@ -54,10 +61,13 @@ class Game {
         })
         this.score = 0;
         this.gameOver = false;
+        this.timer = 0;
     }
-    render() {
+    render(deltaTime) {
+        if(!this.gameOver) this.timer += deltaTime
         this.background.update()
         this.background.draw()
+        this.drawStatusText()
         this.player.update()
         this.player.draw()
         this.obstacles.forEach(obstacle => {
@@ -75,6 +85,44 @@ class Game {
         }
     }
 
+    checkCollision(a, b) {
+        const distanceX = a.collisionX - b.collisionX;
+        const distanceY = a.collisionY - b.collisionY;
+        const distance = Math.hypot(distanceX, distanceY);
+        const sumOfRadius = a.collisionRadius + b.collisionRadius;
+        return distance <= sumOfRadius
+    }
+
+    drawStatusText() {
+        this.ctx.save();
+        this.ctx.fillText('SCORE: ' + this.score, this.width - 10, 50)
+        this.ctx.textAlign = 'start'
+        this.ctx.fillText('TIMER: ' + this.formatTimer(), 10, 50)
+        this.ctx.restore();
+
+        if(this.gameOver) {
+            if(this.player.collided){
+                this.message1 = "Getting rusty?"
+                this.message2 = "Collision time " + this.formatTimer() + ' seconds!'
+            } else if (this.obstacles.length <= 0) {
+                this.message1 = 'Nailed It!';
+                this.message2 = "Can you do it faster than " + this.formatTimer() + ' seconds?'
+
+            }
+            this.ctx.textAlign = 'center';
+            this.ctx.font = '30px Bungee'
+            this.ctx.fillText(this.message1, this.width * 0.5, this.height * 0.5 - 40);
+            this.ctx.font = '15px Bungee'
+            this.ctx.fillText(this.message2, this.width * 0.5, this.height * 0.5 - 20);
+            this.ctx.fillText("Press R to try again!", this.width * 0.5, this.height * 0.5);
+        }
+
+    }
+
+    formatTimer() {
+        return (this.timer * 0.001).toFixed(1);
+    }
+
 }
 
 window.addEventListener('load', function() {
@@ -84,14 +132,15 @@ window.addEventListener('load', function() {
     canvas.height = 720;
 
     const game = new Game(canvas, ctx)
+
+    let lastTime = 0;
     
-    function animate() {
+    function animate(timeStamp) {
+        const deltaTime = timeStamp - lastTime;
+        lastTime = timeStamp;
         ctx.clearRect(0, 0, canvas.width, canvas.height)
-        game.render();
-        if(!game.gameOver) {
-            console.log(game.gameOver)
-            requestAnimationFrame(animate)
-        }
+        game.render(deltaTime);
+        requestAnimationFrame(animate)
     }
 
     requestAnimationFrame(animate)
