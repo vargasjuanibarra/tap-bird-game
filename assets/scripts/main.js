@@ -9,14 +9,17 @@ class Game {
         this.background = new Background(this);
         this.player = new Player(this);
         this.obstacles = [];
-        this.numberOfObstacles = 1;
+        this.numberOfObstacles = 5;
         this.gravity;
         this.speed;
+        this.minSpeed;
+        this.maxSpeed;
         this.score;
         this.gameOver;
         this.timer;
         this.message1;
         this.message2;
+        this.mouseDown;
 
         this.resize(window.innerWidth, window.innerHeight)
 
@@ -26,12 +29,16 @@ class Game {
         })
         // mouse controls
         this.canvas.addEventListener('mousedown', (e) => {
-            this.player.flap()
+                this.player.flap();
         })
         // keyboard control
         window.addEventListener('keydown', (e) => {
             if(e.code === 'Space') {
                 this.player.flap() 
+            }
+            console.log(e)
+            if(e.code === 'ShiftLeft') {
+                this.player.startCharge()
             }
         })
         // touch control
@@ -42,7 +49,7 @@ class Game {
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
-        this.ctx.fillStyle = 'red'
+        this.ctx.fillStyle = 'gold'
         this.ctx.font = '15px Bungee'
         this.ctx.textAlign =  'end'
         this.ctx.lineWidth = 3;
@@ -53,6 +60,8 @@ class Game {
 
         this.gravity = .25 * this.ratio;
         this.speed = 2 * this.ratio;
+        this.minSpeed = this.speed;
+        this.maxSpeed = this.speed * 5;
         this.background.resize();
         this.player.resize();
         this.createObstacles();
@@ -98,8 +107,7 @@ class Game {
         this.ctx.fillText('SCORE: ' + this.score, this.width - 10, 50)
         this.ctx.textAlign = 'start'
         this.ctx.fillText('TIMER: ' + this.formatTimer(), 10, 50)
-        this.ctx.restore();
-
+        
         if(this.gameOver) {
             if(this.player.collided){
                 this.message1 = "Getting rusty?"
@@ -107,7 +115,7 @@ class Game {
             } else if (this.obstacles.length <= 0) {
                 this.message1 = 'Nailed It!';
                 this.message2 = "Can you do it faster than " + this.formatTimer() + ' seconds?'
-
+                
             }
             this.ctx.textAlign = 'center';
             this.ctx.font = '30px Bungee'
@@ -116,6 +124,17 @@ class Game {
             this.ctx.fillText(this.message2, this.width * 0.5, this.height * 0.5 - 20);
             this.ctx.fillText("Press R to try again!", this.width * 0.5, this.height * 0.5);
         }
+        if (this.player.energy <= 20) {
+            this.ctx.fillStyle = 'red'
+        } else if (this.player.energy  >= this.player.maxEnergy) {
+            this.ctx.fillStyle = 'green'
+        } else {
+            this.ctx.fillStyle = 'orange'
+        }
+        for (let i = 0; i < this.player.energy; i++) {
+            this.ctx.fillRect(10,this.height - 10 - this.player.barSize * i, this.player.barSize * 5, this.player.barSize)
+        }
+        this.ctx.restore();
 
     }
 
@@ -134,7 +153,11 @@ window.addEventListener('load', function() {
     const game = new Game(canvas, ctx)
 
     let lastTime = 0;
-    
+
+    document.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+      });
+
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;

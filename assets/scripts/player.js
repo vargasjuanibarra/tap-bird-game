@@ -12,9 +12,14 @@ class Player {
         this.collisionY;
         this.collisionRadius;
         this.collided;
+        this.energy = 30;
+        this.maxEnergy = this.energy * 2;
+        this.minEnergy = 15;
+        this.charging;
+        this.barSize;
      }
      draw(){
-        this.game.ctx.fillRect(
+        this.game.ctx.strokeRect(
             this.x,
             this.y,
             this.width,
@@ -25,10 +30,10 @@ class Player {
         this.game.ctx.stroke()
      }
      update() {
-
-         // if (this.x >= this.game.width - this.width) {
+        // if (this.x >= this.game.width - this.width) {
          //    this.x += 5
          // }
+         this.handleEnergy()
          this.y += this.speedY
          this.collisionY = this.y + this.height *.5
          if (!this.isTouchingBottom()) {
@@ -55,6 +60,15 @@ class Player {
       this.collisionRadius = this.width * .5;
       this.collisionX = this.x + this.width * .5;
       this.collided = false;
+      this.barSize = Math.floor(5 * this.game.ratio);
+     }
+     startCharge() {
+      this.charging = true;
+      this.game.speed = this.game.maxSpeed;
+     }
+     stopCharge() {
+      this.charging = false;
+      this.game.speed = this.game.minSpeed;
      }
 
      isTouchingTop() {
@@ -65,7 +79,24 @@ class Player {
       return this.y >= this.game.height - this.height
      }
 
+     handleEnergy() {
+      if (this.energy < this.maxEnergy) {
+         this.energy += 0.01;
+      }
+
+      if(this.charging) {
+         this.energy -= .5;
+         if(this.energy <= 0){
+            this.energy = 0;
+            this.stopCharge()
+         }
+      }
+
+  
+     }
+
      flap() {
+      this.stopCharge()
       if (!this.isTouchingTop()) {
          this.speedY = -5 * this.game.ratio
       }
