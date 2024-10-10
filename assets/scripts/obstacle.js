@@ -20,8 +20,13 @@ class Obstacle {
         this.y += this.speedY;
         this.collisionX = this.x + this.scaledWidth * .5;
         this.collisionY = this.y + this.scaledHeight * .5;
-        if (this.y <= 0 || this.y >= this.game.height -this.scaledHeight ){
-            this.speedY *= -1
+        if(!this.game.gameOver) {
+
+            if (this.y <= 0 || this.y >= this.game.height -this.scaledHeight ){
+                this.speedY *= -1
+            }
+        } else {
+            this.speedY += 0.1
         }
         if(this.isOfScreen()) {
             this.markedForDeletion = true;
@@ -35,8 +40,9 @@ class Obstacle {
             }
         }
         if(this.game.checkCollision(this, this.game.player)) {
-            this.gameOver = true;
+            this.game.gameOver = true;
             this.game.player.collided = true;
+            this.game.player.stopCharge();
         }
     }
 
@@ -52,6 +58,6 @@ class Obstacle {
         this.scaledHeight = this.spriteHeight * this.game.ratio;
     }
     isOfScreen() {
-        return this.x < -this.scaledWidth;
+        return this.x < -this.scaledWidth || this.y > this.game.height;
     }
 }

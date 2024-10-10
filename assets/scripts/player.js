@@ -36,8 +36,10 @@ class Player {
          this.handleEnergy()
          this.y += this.speedY
          this.collisionY = this.y + this.height *.5
-         if (!this.isTouchingBottom()) {
+         if (!this.isTouchingBottom() && !this.charging) {
             this.speedY += this.game.gravity;
+         } else {
+            this.speedY = 0
          }
 
          // bottom boudary
@@ -80,19 +82,19 @@ class Player {
      }
 
      handleEnergy() {
-      if (this.energy < this.maxEnergy) {
-         this.energy += 0.01;
-      }
-
-      if(this.charging) {
-         this.energy -= .5;
-         if(this.energy <= 0){
-            this.energy = 0;
-            this.stopCharge()
+      if (this.game.eventUpdate) {
+         if (this.energy < this.maxEnergy) {
+            this.energy += 2;
+         }
+   
+         if(this.charging) {
+            this.energy -= 5;
+            if(this.energy <= 0){
+               this.energy = 0;
+               this.stopCharge()
+            }
          }
       }
-
-  
      }
 
      flap() {

@@ -20,6 +20,11 @@ class Game {
         this.message1;
         this.message2;
         this.mouseDown;
+        this.eventTimer = 0;
+        this.eventInterval = 150;
+        this.eventUpdate = false;
+        this.touchX;
+        this.swipeDistance = 50;
 
         this.resize(window.innerWidth, window.innerHeight)
 
@@ -36,14 +41,20 @@ class Game {
             if(e.code === 'Space') {
                 this.player.flap() 
             }
-            console.log(e)
             if(e.code === 'ShiftLeft') {
                 this.player.startCharge()
             }
         })
         // touch control
         this.canvas.addEventListener('touchstart', (e) => {
+            this.touchX = e.changedTouches[0].pageX;
             this.player.flap() 
+        })
+
+        this.canvas.addEventListener('touchmove', (e) => {
+            if (e.changedTouches[0].pageX - this.touchX > this.swipeDistance) {
+                this.player.startCharge()
+            }
         })
     }
     resize(width, height) {
@@ -73,7 +84,8 @@ class Game {
         this.timer = 0;
     }
     render(deltaTime) {
-        if(!this.gameOver) this.timer += deltaTime
+        if(!this.gameOver) this.timer += deltaTime;
+        this.handlePeriodicEvents(deltaTime)
         this.background.update()
         this.background.draw()
         this.drawStatusText()
@@ -102,6 +114,16 @@ class Game {
         return distance <= sumOfRadius
     }
 
+    handlePeriodicEvents(deltaTime) {
+        if(this.eventTimer < this.eventInterval){
+            this.eventTimer += deltaTime;
+            this.eventUpdate = false;
+        } else {
+            this.eventTimer = this.eventTimer % this.eventInterval;
+            this.eventUpdate = true;
+        }
+
+    }
     drawStatusText() {
         this.ctx.save();
         this.ctx.fillText('SCORE: ' + this.score, this.width - 10, 50)
